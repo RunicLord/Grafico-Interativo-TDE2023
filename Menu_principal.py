@@ -1,6 +1,4 @@
 import streamlit as st
-import seaborn as sns
-import plots as p
 
 st.set_page_config(
     page_title="TDE - Grafico Dinâmico"
