@@ -61,13 +61,21 @@ for j in range(len(Assin)):
 
 Asnt = [float(i) for i in Assin]
 An1 = [int(i) for i in Ano1]
+dfN = pd.DataFrame({'Ano': An1, 'Assinantes': Asnt})
 
 
 def assinantes_netflix():
     fig = px.line(x=An1, y=Asnt)
     fig.update_xaxes(title_text="Ano")
     fig.update_yaxes(title_text="Em milhares")
+    fig.update_layout(title="Assinantes netflix")
     st.plotly_chart(fig, use_container_width=True)
+    st.dataframe(dfN,
+                 column_config={
+                     "Assinantes": "Assinantes (Em milhares)",
+                 }, use_container_width=True)
+    st.caption("""Dados retirados de:  
+        https://ir.netflix.net/financials/quarterly-earnings/default.aspx""")
 # ______________________________________________________________________________________________________________
 
 
@@ -106,12 +114,21 @@ asscmp = Asnt[0:6]
 frqcim = pd.DataFrame({'ANO': anocmp, 'Publico de cinema': plbcmp, 'Assinantes netflix': asscmp})
 frqcim.set_index('ANO', inplace=True)
 frqcim = frqcim.pct_change()*100
+frqcim2 = pd.DataFrame({'ANO': anocmp, 'Publico de cinema': plbcmp, 'Assinantes netflix': asscmp})
+frqcim2.set_index('ANO', inplace=True)
 
 
 def bilheteria():
     fig = frqcim.plot(title="Bilheteria", labels=dict(index="Ano", value="Em porcentagem",
                                                       variable=""))
     st.plotly_chart(fig, use_container_width=True)
+
+    st.dataframe(frqcim2, use_container_width=True, column_config={
+                     "Assinantes netflix": "Assinantes netflix (Em milhares)"})
+    st.caption("""Dados retirados de:  
+    https://ir.netflix.net/financials/quarterly-earnings/default.aspx  
+    https://www.gov.br/ancine/pt-br/oca/mercado-audiovisual-brasileiro""")
+
 # ______________________________________________________________________________________________________________
 
 
@@ -124,18 +141,31 @@ def publico_cinema():
     fig = pblev.plot(title="Publico cinema", labels=dict(index="Ano", value="Em milhares",
                                                          variable=""))
     st.plotly_chart(fig, use_container_width=True)
+    st.dataframe(pblev, use_container_width=True)
+    st.caption("""Dados retirados de:  
+        https://www.gov.br/ancine/pt-br/oca/mercado-audiovisual-brasileiro""")
 # ______________________________________________________________________________________________________________
 
 
 # _____________Participação nacional____________________________________________________________________________
-nacfilm = pd.DataFrame({'ANO': An2, 'Participação nacional': prt, 'lançamentos brasileiros': lnc})
-nacfilm.set_index('ANO', inplace=True)
+nacfilm = pd.DataFrame({'Ano': An2, 'Participação nacional': prt, 'lançamentos brasileiros': lnc})
+nacfilm.set_index('Ano', inplace=True)
 
 
 def participacao_nacional():
     fig = nacfilm.plot(title="Participação nacional", labels=dict(index="Ano", value="Em porcentagem",
                                                                   variable=""))
     st.plotly_chart(fig, use_container_width=True)
+    st.dataframe(nacfilm, use_container_width=True, column_config={
+        'Participação nacional': st.column_config.NumberColumn(
+            format="%.2f%%"
+        ),
+        'lançamentos brasileiros': st.column_config.NumberColumn(
+            format="%.2f%%"
+        )
+    })
+    st.caption("""Dados retirados de:  
+            https://www.gov.br/ancine/pt-br/oca/mercado-audiovisual-brasileiro""")
 # ______________________________________________________________________________________________________________
 
 
@@ -149,6 +179,17 @@ def plnetflix_x_ingresso():
     fig = difval.plot(title="Consumo VS Lançamentos", labels=dict(index="Ano", value="Em reais",
                                                                   variable=""))
     st.plotly_chart(fig, use_container_width=True)
+    st.dataframe(difval, use_container_width=True, column_config={
+        'Plano padrao': st.column_config.NumberColumn(
+            format="R$%.2f"
+        ),
+        'Preço medio ingresso': st.column_config.NumberColumn(
+            format="R$%.2f"
+        )
+    })
+    st.caption("""Dados retirados de:  
+        https://ir.netflix.net/financials/quarterly-earnings/default.aspx  
+        https://www.gov.br/ancine/pt-br/oca/mercado-audiovisual-brasileiro""")
 # ______________________________________________________________________________________________________________
 
 
@@ -173,6 +214,8 @@ df41 = pd.DataFrame({'ANO': An2, 'Salario minimo': Slmin, 'Preco medio ingresso'
 df41.set_index('ANO', inplace=True)
 
 df41 = df41.pct_change()*100
+df42 = pd.DataFrame({'ANO': An2, 'Salario minimo': Slmin, 'Preco medio ingresso': prc})
+df42.set_index('ANO', inplace=True)
 
 
 def salario_x_ingresso():
@@ -180,6 +223,16 @@ def salario_x_ingresso():
                                                                           variable=""))
 
     st.plotly_chart(fig, use_container_width=True)
+    st.dataframe(df42, use_container_width=True, column_config={
+        'Salario minimo': st.column_config.NumberColumn(
+            format="R$%.2f"
+        ),
+        'Preco medio ingresso': st.column_config.NumberColumn(
+            format="R$%.2f"
+        )
+    })
+    st.caption("""Dados retirados de:  
+                https://www.gov.br/ancine/pt-br/oca/mercado-audiovisual-brasileiro""")
 # ______________________________________________________________________________________________________________
 
 
@@ -193,21 +246,40 @@ acesso = df5.iloc[2, 2:10].to_numpy(copy=True)
 df51 = pd.DataFrame({'Ano': Ano4, 'Acesso a internet/domicílio': acesso/1000})
 df51.set_index('Ano', inplace=True)
 
+df9 = pd.read_csv("Datasets/domicilios_percentual.csv", encoding='latin-1', sep=';')
+df9 = df9.drop(['Unnamed: 3', 'Unnamed: 5', 'Unnamed: 7', 'Unnamed: 9', 'Unnamed: 11', 'Unnamed: 13', 'Unnamed: 15',
+                'Unnamed: 17'], axis=1)
+df9 = df9.fillna("")
+Ano9 = df9.iloc[1, 2:10].to_numpy(copy=True)
+acessos = df9.iloc[2, 2:10].to_numpy(copy=True)
+df91 = pd.DataFrame({'Ano': Ano9, 'Domicílios com acesso a internet': acessos})
+df91.set_index('Ano', inplace=True)
+
 
 def domicilios_internet():
-    fig = df51.plot(title="Acesso a internet/domicílio", labels=dict(index="Ano", value="Em percentual",
-                                                                     variable=""))
+    fig = df91.plot(title="Acesso a internet por domicílio", labels=dict(index="Ano", value="Em Porcentagem",
+                                                                         variable=""))
 
     st.plotly_chart(fig, use_container_width=True)
+    st.dataframe(df91, use_container_width=True, column_config={
+        'Domicílios com acesso a internet': st.column_config.NumberColumn(
+            format="%.2f%%"
+        )
+    })
+    st.caption("""Dados retirados de:  
+                https://data.cetic.br/explore/""")
 # ______________________________________________________________________________________________________________
 
 
 # ___Salas em funcionamento x Acesso a internet por domicílio___________________________________________________
 df6 = pd.read_excel("Datasets/num_salas.xlsx")
 salas = df6.iloc[0, 14:22].to_numpy(copy=True)
-sxa = pd.DataFrame({'ANO': Ano4, 'Salas em funcionamento': salas, 'Acesso a internet/domicílio': acesso})
-sxa.set_index('ANO', inplace=True)
+sxa = pd.DataFrame({'Ano': Ano4, 'Salas em funcionamento': salas, 'Acesso a internet/domicílio': acesso})
+sxa.set_index('Ano', inplace=True)
 sxa = sxa.pct_change()*100
+
+sxa1 = pd.DataFrame({'Ano': Ano4, 'Salas em funcionamento': salas, 'Acesso a internet/domicílio': acesso})
+sxa1.set_index('Ano', inplace=True)
 
 
 def salas_x_internet():
@@ -215,4 +287,8 @@ def salas_x_internet():
                    labels=dict(index="Ano", value="Em percentual", variable=""))
 
     st.plotly_chart(fig, use_container_width=True)
+    st.dataframe(sxa1, use_container_width=True)
+    st.caption("""Dados retirados de:  
+            https://data.cetic.br/explore/  
+            https://www.gov.br/ancine/pt-br/oca/mercado-audiovisual-brasileiro""")
 # ______________________________________________________________________________________________________________
